@@ -12,9 +12,6 @@ $ua->agent("Mozilla/8.0");
 # stupid page, stupid cookies, but needed unfortunately
 $ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});   
 
-# date and time
-my $nowdate = sprintf("%s.%s.%s", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
-my $nowtime = sprintf("%s:%s", (localtime)[2], (localtime)[1]);
 
 # which coins do we want to watch?
 my @watchlist = qw(DOGE FTC LTC DVC DGC);
@@ -29,17 +26,57 @@ sub get_data {
     else {
         print "Couldn't fetch API, ... :/\n";
     }
+    system('clear');
     return $data;
 }
 
-my $A = get_data();
 
-print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n\n";
-printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s\n", qw(CUR HB LA LT VOL_BTC));
-for my $cur (sort keys %{$A}) {
-     if (grep { /$cur/ } @watchlist) {
-        printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f\n", $cur, $A->{$cur}{'BTC'}{'highest-bid'}{'content'}, $A->{$cur}{'BTC'}{'lowest-ask'}{'content'},
-            $A->{$cur}{'BTC'}{'last-trade'}{'content'}, $A->{'BTC'}{$cur}{'volume'}{'content'};
+my @storage;
+my $storcounter = 0;
+
+
+
+while (1) {
+    # date and time
+    my $nowdate = sprintf("%02d.%02d.%02d", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
+    my $nowtime = sprintf("%02d:%02d:%02d", (localtime)[2], (localtime)[1], (localtime)[0]);
+    $storage[$storcounter] = get_data();
+
+    if ($storcounter == 50) { # 20 x 10 secs for averages and tendencies
+        shift @storage;
+        $storcounter = 49;
     }
+    print "$nowdate - $nowtime - refresh approx. every 5 seconds (+/- some seconds for network latency and server load)";
+    print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n";
+    print "TENDENCY is a percentual value and will appear after some time (4.5m), please be patient :)\n";
+    print "Tendency calculates like this: (last_trade / average_of_20_or_50_last_recorded_trades * 100) - 100\n\n";
+    printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n", qw(CUR HB LA LT VOL_BTC TEND_20 TEND_50));
+    for my $cur (sort keys %{$storage[$storcounter]}) {
+        if (grep { /$cur/ } @watchlist) {
+            printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", $cur, $storage[$storcounter]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[$storcounter]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
+                $storage[$storcounter]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[$storcounter]->{'BTC'}{$cur}{'volume'}{'content'};
+            if ($storcounter >= 49) {
+                my $sum_20 = 0.0;
+                for (30 .. 49) {
+                     $sum_20 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                }
+                my $avg_20 = $sum_20 / 20;
+                printf ("%+10.5f  :  ",  ($storage[9]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_20 * 100) - 100);
+                my $sum_50 = 0.0;
+                for (0 .. 49) {
+                     $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                }
+                my $avg_50 = $sum_50 / 50;
+                printf ("%+10.5f",  ($storage[9]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
+                print "  % \n";
+            }
+            else {
+                print "\n";
+            }
+
+        }
+    }
+    print "\n";
+    sleep 5;
+    $storcounter++;
 }
-print "\n";
