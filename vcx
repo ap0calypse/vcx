@@ -1,0 +1,45 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use XML::Simple;
+use LWP::UserAgent;
+
+my $ua = LWP::UserAgent->new;
+
+# whatever .. vircurex just doesn't like libwww-perl as user agent signature
+$ua->agent("Mozilla/8.0");  
+
+# stupid page, stupid cookies, but needed unfortunately
+$ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});   
+
+# date and time
+my $nowdate = sprintf("%s.%s.%s", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
+my $nowtime = sprintf("%s:%s", (localtime)[2], (localtime)[1]);
+
+# which coins do we want to watch?
+my @watchlist = qw(DOGE FTC LTC DVC DGC);
+
+# function that gets th API xml file and then parses it into a wonderful hash
+sub get_data {
+    my $data;
+    my $response = $ua->get("https://vircurex.com/api/get_info_for_currency.xml");
+    if ($response->is_success) {
+        $data = XMLin($response->decoded_content);
+    }
+    else {
+        print "Couldn't fetch API, ... :/\n";
+    }
+    return $data;
+}
+
+my $A = get_data();
+
+print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n\n";
+printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s\n", qw(CUR HB LA LT VOL_BTC));
+for my $cur (sort keys %{$A}) {
+     if (grep { /$cur/ } @watchlist) {
+        printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f\n", $cur, $A->{$cur}{'BTC'}{'highest-bid'}{'content'}, $A->{$cur}{'BTC'}{'lowest-ask'}{'content'},
+            $A->{$cur}{'BTC'}{'last-trade'}{'content'}, $A->{'BTC'}{$cur}{'volume'}{'content'};
+    }
+}
+print "\n";
