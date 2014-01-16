@@ -19,12 +19,12 @@ my @watchlist = qw(DOGE FTC LTC DVC DGC ANC WDC TRC XPM QRK PPC);
 # function that gets th API xml file and then parses it into a wonderful hash
 sub get_data {
     my $data = 0;
-    my $response = $ua->get("https://vircurex.com/api/get_info_for_currency.xml");
+    my $response = $ua->get("https://api.vircurex.com/api/get_info_for_currency.xml");
     if ($response->is_success) {
         $data = XMLin($response->decoded_content);
     }
     else {
-        print "Couldn't fetch API, ... :/\n";
+        system('date >> /tmp/vcx_log');
     }
     system('clear');
     return $data;
