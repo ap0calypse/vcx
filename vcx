@@ -23,9 +23,6 @@ sub get_data {
     if ($response->is_success) {
         $data = XMLin($response->decoded_content);
     }
-    else {
-        system('date >> /tmp/vcx_log');
-    }
     system('clear');
     return $data;
 }
