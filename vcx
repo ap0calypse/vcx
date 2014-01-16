@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use XML::Simple;
 use LWP::UserAgent;
+use Term::ANSIColor qw(colored);
 
 my $ua = LWP::UserAgent->new;
 
@@ -31,6 +32,9 @@ sub get_data {
 my @storage;
 my $storcounter = 0;
 
+sub is_positive {
+    return $_[0] > 0.0 ? 1 : 0;
+}
 
 
 while (1) {
@@ -65,7 +69,13 @@ while (1) {
                      $sum_20 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                 }
                 my $avg_20 = $sum_20 / 20;
-                printf ("%+10.5f  :  ",  ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_20 * 100) - 100);
+                my $v = sprintf("%+.7f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_20 * 100) - 100);
+                if (is_positive($v)) {
+                    printf ("%8s  :  ",  colored($v, 'bright_green on_black'));
+                }
+                else {
+                    printf ("%8s  :  ",  colored($v, 'bright_red on_black'));
+                }
                 if (scalar @storage >= 50) {
                     my ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
                     my $sum_50 = 0.0;
@@ -73,7 +83,13 @@ while (1) {
                         $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                     }
                     my $avg_50 = $sum_50 / 50;
-                    printf ("%+10.5f  :  ",  ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
+                    my $v = sprintf("%+.7f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
+                    if (is_positive($v)) {
+                        printf ("%8s  :  ",  colored($v, 'bright_green on_black'));
+                    }
+                    else {
+                        printf ("%8s  :  ",  colored($v, 'bright_red on_black'));
+                    }
                     if (scalar @storage >= 200) {
                         my ($low, $high) = (scalar @storage - 200, scalar @storage - 1);
                         my $sum_200 = 0.0;
@@ -81,7 +97,13 @@ while (1) {
                             $sum_200 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                         }
                         my $avg_200 = $sum_200 / 200;
-                        printf ("%+10.5f",  ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_200 * 100) - 100);
+                        my $v = sprintf("%+.7f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_200 * 100) - 100);
+                        if (is_positive($v)) {
+                            printf ("%8s",  colored($v, 'bright_green on_black'));
+                        }
+                        else {
+                            printf ("%8s",  colored($v, 'bright_red on_black'));
+                        }
                     }
 
                 }
