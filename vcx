@@ -61,8 +61,8 @@ while (1) {
     printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_20 TEND_50 TEND_200));
     for my $cur (sort keys %{$storage[$storcounter]}) {
         if (grep { /$cur/ } @watchlist) {
-            printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", $cur, $storage[$storcounter]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[$storcounter]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
-                $storage[$storcounter]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[$storcounter]->{'BTC'}{$cur}{'volume'}{'content'};
+            printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", $cur, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
+                $storage[scalar @storage - 1]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[scalar @storage - 1]->{'BTC'}{$cur}{'volume'}{'content'};
             if (scalar @storage >= 20) {
                 my ($low, $high) = (scalar @storage - 20, scalar @storage - 1);
                 my $sum_20 = 0.0;
