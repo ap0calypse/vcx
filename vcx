@@ -25,12 +25,15 @@ sub get_data {
         $data = XMLin($response->decoded_content);
     }
     system('clear');
+    undef $response;
     return $data;
 }
 
 
 my @storage;
 my $storcounter = 0;
+my ($nowdate, $nowtime);
+my $block;
 
 sub is_positive {
     return $_[0] > 0.0 ? 1 : 0;
@@ -39,9 +42,9 @@ sub is_positive {
 
 while (1) {
     # date and time
-    my $nowdate = sprintf("%02d.%02d.%02d", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
-    my $nowtime = sprintf("%02d:%02d:%02d", (localtime)[2], (localtime)[1], (localtime)[0]);
-    my $block = get_data();
+    $nowdate = sprintf("%02d.%02d.%02d", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
+    $nowtime = sprintf("%02d:%02d:%02d", (localtime)[2], (localtime)[1], (localtime)[0]);
+    $block = get_data();
 
     if ($block) {
         push @storage, $block;
@@ -50,6 +53,7 @@ while (1) {
     push @storage, $block if $block;
 
     if (scalar @storage > 200) { # 200 x 5 secs for averages and tendencies
+        undef $storage[0];
         shift @storage;
         $storcounter--;
     }
