@@ -9,9 +9,10 @@ Prerequisites:
 
 In order to run this script your need the following Perl modules installed:
 
-LWP::UserAgent
-XML::Simple
-LWP::UserAgent::Protocol::https
+    LWP::UserAgent
+    XML::Simple
+    LWP::UserAgent::Protocol::https
+
 
 If you have ArchLinux running, just install everything with this command:
 
@@ -21,7 +22,7 @@ If you have ArchLinux running, just install everything with this command:
 
 This script is very minimalistic and doesn't take commandline arguments. Please
 edit the script itself and set the @watchlist to whatever you need. For example,
-if you want to see DOGE and LTC stats:
+if you want to see only DOGE and LTC stats:
 
     my @watchlist = qw(DOGE LTC);
 
@@ -29,37 +30,52 @@ if you want to see DOGE and LTC stats:
 
 Sample output should look similar to this (depending on your watchlist):
 
-    18.01.2014 - 17:49:14 - refresh approx. every 5 seconds (+/- some seconds for network latency and server load)
-    HB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC
-    TENDENCY is a percentual value and will appear after some time, please be patient :)
-    Tendency calculates like this: (last_trade / average_of_20_or_50_last_recorded_trades * 100) - 100
-    PLEASE BE AWARE THAT THE API IS NOT UPDATED AS FAST AS WE POLL!
+     20.01.2014 - 00:02:13 - refresh approx. every 2-3 seconds (+ some seconds [network/load]) [ 000000509 polls ]
+     HB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC
+     TENDENCY is a percentual value and will appear after some time, please be patient :)
+     Tendency calculates like this: (last_trade / average_of_x_recorded_trades * 100) - 100
 
-     CUR  :          HB  :          LA  :          LT  :     VOL_BTC  :     TEND_20  :     TEND_50  :    TEND_200
-
-
-     ANC  :  0.00471000  :  0.00479965  :  0.00471000  :  0001.97691  :  -0.0000000  :    % 
-
-     DGC  :  0.00038300  :  0.00040000  :  0.00039500  :  0000.75585  :  -0.0000000  :    % 
-
-    DOGE  :  0.00000066  :  0.00000067  :  0.00000066  :  0157.37374  :  +4.4303797  :    % 
-
-     DVC  :  0.00000045  :  0.00000047  :  0.00000046  :  0005.42896  :  +0.0000000  :    % 
-
-     FTC  :  0.00036751  :  0.00037999  :  0.00036751  :  0001.05901  :  +0.0000000  :    % 
-
-     LTC  :  0.02870144  :  0.02899106  :  0.02899106  :  0032.47034  :  -0.0000000  :    % 
-
-     PPC  :  0.00692000  :  0.00704765  :  0.00687000  :  0009.19562  :  +0.0000000  :    % 
-
-     QRK  :  0.00007949  :  0.00008339  :  0.00007948  :  0000.79859  :  -0.0000000  :    % 
-
-     TRC  :  0.00053000  :  0.00054729  :  0.00053000  :  0000.44908  :  +0.0000000  :    % 
-
-     WDC  :  0.00042700  :  0.00042701  :  0.00042701  :  0035.98302  :  -0.0000000  :    % 
-
-     XPM  :  0.00380006  :  0.00398994  :  0.00382099  :  0001.65990  :  +0.0000000  :    % 
+     CUR  :          HB  :          LA  :          LT  :     VOL_BTC  :     TEND_50  :    TEND_250  :    TEND_500
 
 
+     ANC  :  0.00432100  :  0.00451998  :  0.00451998  :  0003.76182  :  -000.00000  :  +000.00000  :  +000.00000  % 
 
-Have fun!
+     DGC  :  0.00036000  :  0.00036100  :  0.00036000  :  0001.36749  :  +000.00000  :  +000.00000  :  +000.00000  % 
+
+    DOGE  :  0.00000080  :  0.00000082  :  0.00000081  :  0167.20850  :  +000.02470  :  +002.16437  :  +001.36911  % 
+
+     DVC  :  0.00000063  :  0.00000065  :  0.00000065  :  0023.13515  :  +000.00000  :  -000.28228  :  +001.13269  % 
+
+     FRC  :  0.00005850  :  0.00006599  :  0.00005850  :  0000.96631  :  +000.00000  :  +000.00000  :  +000.00000  % 
+
+     FTC  :  0.00036900  :  0.00037001  :  0.00036900  :  0000.46527  :  -000.00000  :  +000.00000  :  -000.00985  % 
+
+     I0C  :  0.00002401  :  0.00002491  :  0.00002517  :  0004.35762  :  +000.00000  :  +000.00000  :  +000.00000  % 
+
+     IXC  :  0.00013501  :  0.00014848  :  0.00014848  :  0002.05911  :  -000.00000  :  +000.00000  :  +004.16082  % 
+
+     LTC  :  0.02900005  :  0.02919999  :  0.02900001  :  0009.44133  :  -000.00000  :  +000.00000  :  -000.37505  % 
+
+     NMC  :  0.00711001  :  0.00737598  :  0.00711001  :  0005.80971  :  +000.00000  :  +000.00000  :  +000.00000  % 
+
+     NVC  :  0.01701000  :  0.01750964  :  0.01701000  :  0002.87701  :  +000.00000  :  +000.00000  :  -000.00000  % 
+
+     PPC  :  0.00672111  :  0.00694357  :  0.00672119  :  0007.40972  :  +000.00000  :  +000.00000  :  -000.97552  % 
+
+     QRK  :  0.00011400  :  0.00012109  :  0.00011898  :  0026.21847  :  -000.00000  :  -000.63026  :  -001.20481  % 
+
+     TRC  :  0.00051000  :  0.00052499  :  0.00051000  :  0000.44749  :  +000.00000  :  +000.00000  :  -000.00000  % 
+
+     WDC  :  0.00039301  :  0.00041999  :  0.00042649  :  0033.60477  :  -000.00000  :  -000.00000  :  -000.00000  % 
+
+     XPM  :  0.00384000  :  0.00388991  :  0.00384000  :  0002.67047  :  -000.00000  :  +000.00000  :  -000.22835  % 
+
+
+
+
+Memory Issues
+-------------
+
+Lately I recognized that vcx used much more memory than needed. This should be fixed by now.
+
+Normally vcx should stay under 500MB or RAM usage.

@@ -9,13 +9,10 @@ my $ua = LWP::UserAgent->new;
 
 # whatever .. vircurex just doesn't like libwww-perl as user agent signature
 $ua->agent("Mozilla/8.0");  
-
-# stupid page, stupid cookies, but needed unfortunately
 $ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});   
 
-
 # which coins do we want to watch?
-my @watchlist = qw(DOGE FTC LTC DVC DGC ANC WDC TRC XPM QRK PPC);
+my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC LTC DVC DGC ANC WDC TRC XPM QRK PPC);
 
 my $data;
 my $response;
@@ -32,17 +29,16 @@ sub get_data {
     return $data;
 }
 
-
-my @storage;
-my $storcounter = -1;
-my ($nowdate, $nowtime);
-my $block;
-my ($cur, $low, $high, $avg_20, $avg_50, $avg_200, $sum_50, $sum_20, $sum_200, $v);
-
+# function for positive check
 sub is_positive {
     return $_[0] > 0.0 ? 1 : 0;
 }
 
+my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
+     $avg_50, $avg_500, $avg_250, $sum_500, $sum_250, $sum_50, $v );
+
+$storcounter = -1;
+$runcounter = 0;
 
 while (1) {
     # date and time
@@ -53,63 +49,73 @@ while (1) {
     if ($block != 0) {
         push @storage, $block;
         $storcounter++;
+        $runcounter++;
     }
-    if (scalar @storage > 200) { # 200 x 5 secs for averages and tendencies
+    if (scalar @storage > 500) { # 200 x 5 secs for averages and tendencies
         undef $storage[0];
         shift @storage;
         $storcounter--;
     }
-    print "$nowdate - $nowtime - refresh approx. every 2-3 seconds (+/- some seconds [network/load]) [ ", sprintf("%09d", scalar @storage), " polls ]";
+    print "$nowdate - $nowtime - refresh approx. every 2-3 seconds (+ some seconds [network/load]) [ ", sprintf("%09d", $runcounter), " polls ]";
     print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n";
     print "TENDENCY is a percentual value and will appear after some time, please be patient :)\n";
-    print "Tendency calculates like this: (last_trade / average_of_20_or_50_last_recorded_trades * 100) - 100\n";
-    print "PLEASE BE AWARE THAT THE API IS NOT UPDATED AS FAST AS WE POLL!\n\n";
-    printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_20 TEND_50 TEND_200));
+    print "Tendency calculates like this: (last_trade / average_of_x_recorded_trades * 100) - 100\n\n";
+    printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_50 TEND_250 TEND_500));
     for $cur (sort keys %{$storage[$storcounter]}) {
         if (grep { /$cur/ } @watchlist) {
-            printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", $cur, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
-                $storage[scalar @storage - 1]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[scalar @storage - 1]->{'BTC'}{$cur}{'volume'}{'content'};
-            if (scalar @storage >= 20) {
-                ($low, $high) = (scalar @storage - 20, scalar @storage - 1);
-                $sum_20 = 0.0;
+            printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
+                    $cur, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
+                    $storage[scalar @storage - 1]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[scalar @storage - 1]->{'BTC'}{$cur}{'volume'}{'content'};
+            if (scalar @storage >= 50) {
+                ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
+                $sum_50 = 0.0;
                 for ($low .. $high) {
-                     $sum_20 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                     $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                 }
-                $avg_20 = $sum_20 / 20;
-                $v = sprintf("%+.7f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_20 * 100) - 100);
+                $avg_50 = $sum_50 / 50;
+                $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
                 if (is_positive($v)) {
-                    printf ("%8s  :  ",  colored($v, 'bright_green on_black'));
+                    printf ("%9s  :  ",  colored($v, 'bright_green on_black'));
+                }
+                elsif ($v == 0.0) {
+                    printf ("%9s  :  ",  colored($v, 'bright_white on_black'));
                 }
                 else {
-                    printf ("%8s  :  ",  colored($v, 'bright_red on_black'));
+                    printf ("%9s  :  ",  colored($v, 'bright_red on_black'));
                 }
-                if (scalar @storage >= 50) {
-                    ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
-                    $sum_50 = 0.0;
+                if (scalar @storage >= 250) {
+                    ($low, $high) = (scalar @storage - 250, scalar @storage - 1);
+                    $sum_250 = 0.0;
                     for ($low .. $high) {
-                        $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                        $sum_250 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                     }
-                    $avg_50 = $sum_50 / 50;
-                    $v = sprintf("%+.7f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
+                    $avg_250 = $sum_250 / 250;
+                    $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_250 * 100) - 100);
                     if (is_positive($v)) {
-                        printf ("%8s  :  ",  colored($v, 'bright_green on_black'));
+                        printf ("%9s  :  ",  colored($v, 'bright_green on_black'));
+                    }
+                    elsif ($v == 0.0) {
+                        printf ("%9s  :  ",  colored($v, 'bright_white on_black'));
                     }
                     else {
-                        printf ("%8s  :  ",  colored($v, 'bright_red on_black'));
+                        printf ("%9s  :  ",  colored($v, 'bright_red on_black'));
                     }
-                    if (scalar @storage >= 200) {
-                        ($low, $high) = (scalar @storage - 200, scalar @storage - 1);
-                        $sum_200 = 0.0;
+                    if (scalar @storage >= 500) {
+                        ($low, $high) = (scalar @storage - 500, scalar @storage - 1);
+                        $sum_500 = 0.0;
                         for ($low .. $high) {
-                            $sum_200 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                            $sum_500 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                         }
-                        $avg_200 = $sum_200 / 200;
-                        $v = sprintf("%+.7f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_200 * 100) - 100);
+                        $avg_500 = $sum_500 / 500;
+                        $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_500 * 100) - 100);
                         if (is_positive($v)) {
-                            printf ("%8s",  colored($v, 'bright_green on_black'));
+                            printf ("%9s",  colored($v, 'bright_green on_black'));
+                        }
+                        elsif ($v == 0.0) {
+                            printf ("%9s",  colored($v, 'bright_white on_black'));
                         }
                         else {
-                            printf ("%8s",  colored($v, 'bright_red on_black'));
+                            printf ("%9s",  colored($v, 'bright_red on_black'));
                         }
                     }
 
