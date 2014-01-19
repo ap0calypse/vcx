@@ -34,7 +34,7 @@ sub get_data {
 
 
 my @storage;
-my $storcounter = 0;
+my $storcounter = -1;
 my ($nowdate, $nowtime);
 my $block;
 my ($cur, $low, $high, $avg_20, $avg_50, $avg_200, $sum_50, $sum_20, $sum_200, $v);
@@ -50,18 +50,16 @@ while (1) {
     $nowtime = sprintf("%02d:%02d:%02d", (localtime)[2], (localtime)[1], (localtime)[0]);
     $block = get_data();
 
-    if ($block) {
+    if ($block != 0) {
         push @storage, $block;
         $storcounter++;
     }
-    push @storage, $block if $block;
-
     if (scalar @storage > 200) { # 200 x 5 secs for averages and tendencies
         undef $storage[0];
         shift @storage;
         $storcounter--;
     }
-    print "$nowdate - $nowtime - refresh approx. every 5 seconds (+/- some seconds for network latency and server load)";
+    print "$nowdate - $nowtime - refresh approx. every 2-3 seconds (+/- some seconds [network/load]) [ ", sprintf("%09d", scalar @storage), " polls ]";
     print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n";
     print "TENDENCY is a percentual value and will appear after some time, please be patient :)\n";
     print "Tendency calculates like this: (last_trade / average_of_20_or_50_last_recorded_trades * 100) - 100\n";
@@ -125,5 +123,5 @@ while (1) {
         }
     }
     print "\n";
-    sleep 5;
+    sleep 2;
 }
