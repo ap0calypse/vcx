@@ -22,7 +22,8 @@ sub get_data {
     $data = 0;
     $response = $ua->get("https://api.vircurex.com/api/get_info_for_currency.xml");
     if ($response->is_success) {
-        $data = XMLin($response->decoded_content);
+        $data = eval { XMLin($response->decoded_content) };
+        $data = 0 if $@;
     }
     system('clear');
     undef $response;
