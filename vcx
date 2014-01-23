@@ -62,36 +62,20 @@ while (1) {
     print "TENDENCY is a percentual value and will appear after some time, please be patient :)\n";
     print "Tendency calculates like this: (last_trade / average_of_x_recorded_trades * 100) - 100\n\n";
     printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_50 TEND_250 TEND_500));
-    for $cur (sort keys %{$storage[$storcounter]}) {
-        if (grep { /$cur/ } @watchlist) {
-            printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
-                    $cur, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
-                    $storage[scalar @storage - 1]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[scalar @storage - 1]->{'BTC'}{$cur}{'volume'}{'content'};
-            if (scalar @storage >= 50) {
-                ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
-                $sum_50 = 0.0;
-                for ($low .. $high) {
-                     $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
-                }
-                $avg_50 = $sum_50 / 50;
-                $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
-                if (is_positive($v)) {
-                    printf ("%9s  :  ",  colored($v, 'bright_green on_black'));
-                }
-                elsif ($v == 0.0) {
-                    printf ("%9s  :  ",  colored($v, 'bright_white on_black'));
-                }
-                else {
-                    printf ("%9s  :  ",  colored($v, 'bright_red on_black'));
-                }
-                if (scalar @storage >= 250) {
-                    ($low, $high) = (scalar @storage - 250, scalar @storage - 1);
-                    $sum_250 = 0.0;
+    if ($storcounter >= 0 ) {
+        for $cur (sort keys %{$storage[$storcounter]}) {
+            if (grep { /$cur/ } @watchlist) {
+                printf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
+                $cur, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
+                $storage[scalar @storage - 1]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[scalar @storage - 1]->{'BTC'}{$cur}{'volume'}{'content'};
+                if (scalar @storage >= 50) {
+                    ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
+                    $sum_50 = 0.0;
                     for ($low .. $high) {
-                        $sum_250 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                        $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                     }
-                    $avg_250 = $sum_250 / 250;
-                    $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_250 * 100) - 100);
+                    $avg_50 = $sum_50 / 50;
+                    $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
                     if (is_positive($v)) {
                         printf ("%9s  :  ",  colored($v, 'bright_green on_black'));
                     }
@@ -101,34 +85,52 @@ while (1) {
                     else {
                         printf ("%9s  :  ",  colored($v, 'bright_red on_black'));
                     }
-                    if (scalar @storage >= 500) {
-                        ($low, $high) = (scalar @storage - 500, scalar @storage - 1);
-                        $sum_500 = 0.0;
+                    if (scalar @storage >= 250) {
+                        ($low, $high) = (scalar @storage - 250, scalar @storage - 1);
+                        $sum_250 = 0.0;
                         for ($low .. $high) {
-                            $sum_500 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                            $sum_250 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
                         }
-                        $avg_500 = $sum_500 / 500;
-                        $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_500 * 100) - 100);
+                        $avg_250 = $sum_250 / 250;
+                        $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_250 * 100) - 100);
                         if (is_positive($v)) {
-                            printf ("%9s",  colored($v, 'bright_green on_black'));
+                            printf ("%9s  :  ",  colored($v, 'bright_green on_black'));
                         }
                         elsif ($v == 0.0) {
-                            printf ("%9s",  colored($v, 'bright_white on_black'));
+                            printf ("%9s  :  ",  colored($v, 'bright_white on_black'));
                         }
                         else {
-                            printf ("%9s",  colored($v, 'bright_red on_black'));
+                            printf ("%9s  :  ",  colored($v, 'bright_red on_black'));
                         }
+                        if (scalar @storage >= 500) {
+                            ($low, $high) = (scalar @storage - 500, scalar @storage - 1);
+                            $sum_500 = 0.0;
+                            for ($low .. $high) {
+                                $sum_500 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
+                            }
+                            $avg_500 = $sum_500 / 500;
+                            $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_500 * 100) - 100);
+                            if (is_positive($v)) {
+                                printf ("%9s",  colored($v, 'bright_green on_black'));
+                            }
+                            elsif ($v == 0.0) {
+                                printf ("%9s",  colored($v, 'bright_white on_black'));
+                            }
+                            else {
+                                printf ("%9s",  colored($v, 'bright_red on_black'));
+                            }
+                        }
+
                     }
-
+                    print "  % \n\n";
                 }
-                print "  % \n\n";
-            }
-            else {
-                print "\n\n";
-            }
+                else {
+                    print "\n\n";
+                }
 
+            }
         }
+        print "\n";
     }
-    print "\n";
     sleep 2;
 }
