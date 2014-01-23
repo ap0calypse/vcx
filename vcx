@@ -5,6 +5,15 @@ use XML::Simple;
 use LWP::UserAgent;
 use Term::ANSIColor qw(colored);
 
+
+my $sleep_int = 2;
+
+# interval checking
+if ($ARGV[0] =~ m/^\d{1,3}$/) {
+    $sleep_int = $ARGV[0];
+}
+
+
 my $ua = LWP::UserAgent->new;
 
 # whatever .. vircurex just doesn't like libwww-perl as user agent signature
@@ -57,7 +66,7 @@ while (1) {
         shift @storage;
         $storcounter--;
     }
-    print "$nowdate - $nowtime - refresh approx. every 2-3 seconds (+ some seconds [network/load]) [ ", sprintf("%09d", $runcounter), " polls ]";
+    print "$nowdate - $nowtime - refresh approx. every $sleep_int seconds (+ some seconds [network/load]) [ ", sprintf("%09d", $runcounter), " polls ]";
     print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n";
     print "TENDENCY is a percentual value and will appear after some time, please be patient :)\n";
     print "Tendency calculates like this: (last_trade / average_of_x_recorded_trades * 100) - 100\n\n";
@@ -132,5 +141,5 @@ while (1) {
         }
         print "\n";
     }
-    sleep 2;
+    sleep $sleep_int;
 }
