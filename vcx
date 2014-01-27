@@ -37,6 +37,7 @@ my ($balance, $data, $response);
 
 # function for getting balance information
 sub get_balance {
+    return 0 unless $conf_hash->{'username'};
     my $timestamp = strftime "%Y-%m-%dT%H:%M:%S", gmtime;
     my $txid = sha256_hex($timestamp);
     my $user = $conf_hash->{'username'};
