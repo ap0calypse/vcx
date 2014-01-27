@@ -12,6 +12,7 @@ In order to run this script your need the following Perl modules installed:
     LWP::UserAgent
     XML::Simple
     LWP::UserAgent::Protocol::https
+    Digest::SHA
 
 
 If you have ArchLinux running, just install everything with this command:
@@ -20,12 +21,20 @@ If you have ArchLinux running, just install everything with this command:
     sudo pacman -S perl-lwp-protocol-https perl-xml-simple perl-libwww
 
 
-This script is very minimalistic and doesn't take commandline arguments. Please
+This script is very minimalistic. Please 
 edit the script itself and set the @watchlist to whatever you need. For example,
 if you want to see only DOGE and LTC stats:
 
     my @watchlist = qw(DOGE LTC);
 
+
+
+Configuration:
+--------------
+
+The package includes a sample config file which should be copied to ~/.vcxconf.xml and edited to fit your needs.
+
+For different refresh intervals, you have to start vcx with any decimal value (./vcx 10 for example for 10 secs).
 
 
 Sample output should look similar to this (depending on your watchlist):

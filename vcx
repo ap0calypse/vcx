@@ -4,7 +4,17 @@ use warnings;
 use XML::Simple;
 use LWP::UserAgent;
 use Term::ANSIColor qw(colored);
+use Digest::SHA qw(sha256_hex);
+use Data::Dumper;
+use POSIX qw(strftime);
 
+# near future feature, coming soon
+my $conf_hash;
+
+my $CONFIG = $ENV{'HOME'} . "/.vcxconf.xml";
+if (-e $CONFIG) {
+    $conf_hash = XMLin($CONFIG);
+}
 
 my $sleep_int = 2;
 
@@ -23,8 +33,31 @@ $ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});
 # which coins do we want to watch?
 my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC LTC DVC DGC ANC WDC TRC XPM QRK PPC);
 
-my $data;
-my $response;
+my ($balance, $data, $response);
+
+# function for getting balance information
+sub get_balance {
+    my $timestamp = strftime "%Y-%m-%dT%H:%M:%S", gmtime;
+    my $txid = sha256_hex($timestamp);
+    my $user = $conf_hash->{'username'};
+    my $sec_getbal = $conf_hash->{'get_balance_word'};
+
+    my $token = sha256_hex("$sec_getbal;$user;$timestamp;$txid;get_balances");
+    $balance = 0;
+    $response = $ua->get("https://api.vircurex.com/api/get_balances.xml?account=$user&id=$txid&token=$token&timestamp=$timestamp");
+    if ($response->is_success) {
+        $balance = eval { XMLin($response->decoded_content) };
+        $balance = 0 if $@;
+    }
+    undef $response;
+    undef $txid;
+    undef $user;
+    undef $sec_getbal;
+    undef $token;
+    system('clear');
+    return $balance;
+}
+
 
 # function that gets th API xml file and then parses it into a wonderful hash
 sub get_data {
@@ -34,7 +67,6 @@ sub get_data {
         $data = eval { XMLin($response->decoded_content) };
         $data = 0 if $@;
     }
-    system('clear');
     undef $response;
     return $data;
 }
@@ -45,16 +77,22 @@ sub is_positive {
 }
 
 my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
-     $avg_50, $avg_500, $avg_250, $sum_500, $sum_250, $sum_50, $v );
+     $avg_50, $avg_500, $avg_250, $sum_500, $sum_250, $sum_50, $v, $bal, $bal_avail );
 
 $storcounter = -1;
 $runcounter = 0;
 
 while (1) {
     # date and time
-    $nowdate = sprintf("%02d.%02d.%02d", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
+    $nowdate = sprintf("%02d-%02d-%02d", (localtime)[3], (localtime)[4] + 1, (localtime)[5] + 1900);
     $nowtime = sprintf("%02d:%02d:%02d", (localtime)[2], (localtime)[1], (localtime)[0]);
     $block = get_data();
+    $bal = get_balance();
+    $bal_avail = 0;
+
+    if ($bal != 0) {
+        $bal_avail = 1;
+    }
 
     if ($block != 0) {
         push @storage, $block;
@@ -131,15 +169,22 @@ while (1) {
                         }
 
                     }
-                    print "  % \n\n";
+                    print "  % \n";
                 }
                 else {
-                    print "\n\n";
+                    print "\n";
                 }
 
             }
         }
         print "\n";
+    }
+    print "\n\n\tBALANCES\n\n";
+    printf "%5s: %20s %20s\n\n", "CUR", "TOTAL BALANCE", "AVAIL BALANCE";
+    if ($bal_avail) {
+        for (sort keys %{$bal->{'balances'}}) {
+            printf "%5s: %20s %20s\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'};
+        }
     }
     sleep $sleep_int;
 }
