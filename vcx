@@ -183,7 +183,7 @@ while (1) {
     printf "%5s: %20s %20s\n\n", "CUR", "TOTAL BALANCE", "AVAIL BALANCE";
     if ($bal_avail) {
         for (sort keys %{$bal->{'balances'}}) {
-            printf "%5s: %20.10f %20.10f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'};
+            printf "%5s: %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'};
         }
     }
     sleep $sleep_int;
