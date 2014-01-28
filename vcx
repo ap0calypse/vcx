@@ -187,5 +187,7 @@ while (1) {
             printf "%5s: %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'};
         }
     }
+    print "\n\n";
+    print "\t", colored("Never forget: Don't bite off more than you can chew ;)", 'italic bright_white on_black'), "\n";
     sleep $sleep_int;
 }
