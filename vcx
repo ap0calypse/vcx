@@ -37,6 +37,8 @@ my ($balance, $data, $response);
 my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
      $avg_50, $avg_500, $avg_250, $sum_500, $sum_250, $sum_50, $v, $bal, $bal_avail );
 
+
+my $comp_data;
 my $colcount = 0;
 my $ln;
 $storcounter = -1;
@@ -75,8 +77,20 @@ sub get_data {
         $data = eval { XMLin($response->decoded_content) };
         $data = 0 if $@;
     }
+    if ($data) {
+        for (@watchlist) {
+            $comp_data->{$_}{'la'} = $data->{$_}{'BTC'}{'lowest-ask'}{'content'};
+            $comp_data->{$_}{'hb'} = $data->{$_}{'BTC'}{'highest-bid'}{'content'};
+            $comp_data->{$_}{'lt'} = $data->{$_}{'BTC'}{'last-trade'}{'content'};
+            $comp_data->{$_}{'vo'} = $data->{'BTC'}{$_}{'volume'}{'content'};
+        }
+    }
+    else {
+        $comp_data = 0;
+    }
+    undef $data;
     undef $response;
-    return $data;
+    return $comp_data;
 }
 sub is_lt { return $_[0] < -10.0 ? 1 : 0; }
 sub is_gt { return $_[0] > 10.0 ? 1 : 0; }
@@ -86,38 +100,18 @@ sub is_zero { return $_[0] == 0.0 ? 1 : 0; }
 sub formprint {
     my $need_separator = shift;
     if ($colcount % 2) {
-        if (is_gt($_[0])) {
-            printf ("%9s",  colored($_[0], 'bold green on_black'));
-        }
-        elsif (is_positive($_[0])) {
-            printf ("%9s",  colored($_[0], 'bright_green on_black'));
-        }
-        elsif (is_lt($_[0])) {
-            printf ("%9s",  colored($_[0], 'bold red on_black'));
-        }
-        elsif (is_zero($_[0])) {
-            printf ("%9s",  colored($_[0], 'bright_white on_black'));
-        }
-        else {
-            printf ("%9s",  colored($_[0], 'bright_red on_black'));
-        }
+        if (is_gt($_[0])) {             printf ("%9s",  colored($_[0], 'bold green on_black'));   }
+        elsif (is_positive($_[0])) {    printf ("%9s",  colored($_[0], 'bright_green on_black')); }
+        elsif (is_lt($_[0])) {          printf ("%9s",  colored($_[0], 'bold red on_black'));     }
+        elsif (is_zero($_[0])) {        printf ("%9s",  colored($_[0], 'bright_white on_black')); }
+        else {                          printf ("%9s",  colored($_[0], 'bright_red on_black'));   }
     }
-    else {
-        if (is_gt($_[0])) {
-            printf ("%9s",  colored($_[0], 'bold green on_grey3'));
-        }
-        elsif (is_positive($_[0])) {
-            printf ("%9s",  colored($_[0], 'bright_green on_grey3'));
-        }
-        elsif (is_lt($_[0])) {
-            printf ("%9s",  colored($_[0], 'bold red on_grey3'));
-        }
-        elsif (is_zero($_[0])) {
-            printf ("%9s",  colored($_[0], 'bright_white on_grey3'));
-        }
-        else {
-            printf ("%9s",  colored($_[0], 'bright_red on_grey3'));
-        }
+    else { 
+        if (is_gt($_[0])) {             printf ("%9s",  colored($_[0], 'bold green on_grey3'));   }
+        elsif (is_positive($_[0])) {    printf ("%9s",  colored($_[0], 'bright_green on_grey3')); }
+        elsif (is_lt($_[0])) {          printf ("%9s",  colored($_[0], 'bold red on_grey3'));     }
+        elsif (is_zero($_[0])) {        printf ("%9s",  colored($_[0], 'bright_white on_grey3')); }
+        else {                          printf ("%9s",  colored($_[0], 'bright_red on_grey3'));   }
     }
     if ($need_separator) {
         if ($colcount % 2) {
@@ -138,9 +132,7 @@ while (1) {
     $bal = get_balance();
     $bal_avail = 0;
 
-    if ($bal != 0) {
-        $bal_avail = 1;
-    }
+    if ($bal != 0) { $bal_avail = 1; }
 
     if ($block != 0) {
         push @storage, $block;
@@ -152,6 +144,7 @@ while (1) {
         shift @storage;
         $storcounter--;
     }
+
     print "$nowdate - $nowtime - refresh approx. every $sleep_int seconds (+ some seconds [network/load]) [ ", sprintf("%09d", $runcounter), " polls ]";
     print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n";
     print "TENDENCY is a percentual value and will appear after some time, please be patient :)\n";
@@ -160,54 +153,52 @@ while (1) {
     $colcount = 0;
     if ($storcounter >= 0 ) {
         for $cur (sort keys %{$storage[$storcounter]}) {
-            if (grep { /$cur/ } @watchlist) {
-                $colcount++;
-                $ln = sprintf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
-                $cur, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'highest-bid'}{'content'}, $storage[scalar @storage - 1]->{$cur}{'BTC'}{'lowest-ask'}{'content'},
-                $storage[scalar @storage - 1]->{$cur}{'BTC'}{'last-trade'}{'content'}, $storage[scalar @storage - 1]->{'BTC'}{$cur}{'volume'}{'content'};
-                if ($colcount % 2) {
-                    print colored($ln, 'bright_white on_black');
-                }
-                else {
-                    print colored($ln, 'bright_white on_grey3');
-                }
-                if (scalar @storage >= 50) {
-                    ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
-                    $sum_50 = 0.0;
-                    for ($low .. $high) {
-                        $sum_50 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
-                    }
-                    $avg_50 = $sum_50 / 50;
-                    $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_50 * 100) - 100);
-                    formprint(1, $v);
-                    if (scalar @storage >= 250) {
-                        ($low, $high) = (scalar @storage - 250, scalar @storage - 1);
-                        $sum_250 = 0.0;
-                        for ($low .. $high) {
-                            $sum_250 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
-                        }
-                        $avg_250 = $sum_250 / 250;
-                        $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_250 * 100) - 100);
-                        formprint(1, $v);
-                        if (scalar @storage >= 500) {
-                            ($low, $high) = (scalar @storage - 500, scalar @storage - 1);
-                            $sum_500 = 0.0;
-                            for ($low .. $high) {
-                                $sum_500 += $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'} if $storage[$_]->{$cur}{'BTC'}{'last-trade'}{'content'};
-                            }
-                            $avg_500 = $sum_500 / 500;
-                            $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'BTC'}{'last-trade'}{'content'} / $avg_500 * 100) - 100);
-                            formprint(0, $v);
-                        }
-
-                    }
-                    print " %\n";
-                }
-                else {
-                    print "\n";
-                }
-
+            $colcount++;
+            $ln = sprintf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
+            $cur, $storage[scalar @storage - 1]->{$cur}{'hb'}, $storage[scalar @storage - 1]->{$cur}{'la'},
+            $storage[scalar @storage - 1]->{$cur}{'lt'}, $storage[scalar @storage - 1]->{$cur}{'vo'};
+            if ($colcount % 2) {
+                print colored($ln, 'bright_white on_black');
             }
+            else {
+                print colored($ln, 'bright_white on_grey3');
+            }
+            if (scalar @storage >= 50) {
+                ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
+                $sum_50 = 0.0;
+                for ($low .. $high) {
+                    $sum_50 += $storage[$_]->{$cur}{'lt'} if $storage[$_]->{$cur}{'lt'};
+                }
+                $avg_50 = $sum_50 / 50;
+                $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_50 * 100) - 100);
+                formprint(1, $v);
+                if (scalar @storage >= 250) {
+                    ($low, $high) = (scalar @storage - 250, scalar @storage - 1);
+                    $sum_250 = 0.0;
+                    for ($low .. $high) {
+                        $sum_250 += $storage[$_]->{$cur}{'lt'} if $storage[$_]->{$cur}{'lt'};
+                    }
+                    $avg_250 = $sum_250 / 250;
+                    $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_250 * 100) - 100);
+                    formprint(1, $v);
+                    if (scalar @storage >= 500) {
+                        ($low, $high) = (scalar @storage - 500, scalar @storage - 1);
+                        $sum_500 = 0.0;
+                        for ($low .. $high) {
+                            $sum_500 += $storage[$_]->{$cur}{'lt'} if $storage[$_]->{$cur}{'lt'};
+                        }
+                        $avg_500 = $sum_500 / 500;
+                        $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_500 * 100) - 100);
+                        formprint(0, $v);
+                    }
+
+                }
+                print " %\n";
+            }
+            else {
+                print "\n";
+            }
+
         }
         print "\n";
     }
