@@ -71,22 +71,21 @@ sub get_balance {
 
 # function that gets th API xml file and then parses it into a wonderful hash
 sub get_data {
-    $data = 0;
+    $data = {};
+    $comp_data = {};
     $response = $ua->get("https://api.vircurex.com/api/get_info_for_currency.xml");
     if ($response->is_success) {
         $data = eval { XMLin($response->decoded_content) };
         $data = 0 if $@;
     }
-    if ($data) {
-        for (@watchlist) {
-            $comp_data->{$_}{'la'} = $data->{$_}{'BTC'}{'lowest-ask'}{'content'};
-            $comp_data->{$_}{'hb'} = $data->{$_}{'BTC'}{'highest-bid'}{'content'};
-            $comp_data->{$_}{'lt'} = $data->{$_}{'BTC'}{'last-trade'}{'content'};
-            $comp_data->{$_}{'vo'} = $data->{'BTC'}{$_}{'volume'}{'content'};
+    
+    if ($data != 0) {
+        for my $cur (@watchlist) {
+            $comp_data->{$cur}{'la'} = $data->{$cur}{'BTC'}{'lowest-ask'}{'content'};
+            $comp_data->{$cur}{'hb'} = $data->{$cur}{'BTC'}{'highest-bid'}{'content'};
+            $comp_data->{$cur}{'lt'} = $data->{$cur}{'BTC'}{'last-trade'}{'content'};
+            $comp_data->{$cur}{'vo'} = $data->{'BTC'}{$cur}{'volume'}{'content'};
         }
-    }
-    else {
-        $comp_data = 0;
     }
     undef $data;
     undef $response;
@@ -134,7 +133,7 @@ while (1) {
 
     if ($bal != 0) { $bal_avail = 1; }
 
-    if ($block != 0) {
+    if ($block != {}) {
         push @storage, $block;
         $storcounter++;
         $runcounter++;
@@ -152,7 +151,7 @@ while (1) {
     printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_50 TEND_250 TEND_500));
     $colcount = 0;
     if ($storcounter >= 0 ) {
-        for $cur (sort keys %{$storage[$storcounter]}) {
+        for my $cur (sort keys %{$storage[$storcounter]}) {
             $colcount++;
             $ln = sprintf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
             $cur, $storage[scalar @storage - 1]->{$cur}{'hb'}, $storage[scalar @storage - 1]->{$cur}{'la'},
@@ -166,8 +165,8 @@ while (1) {
             if (scalar @storage >= 50) {
                 ($low, $high) = (scalar @storage - 50, scalar @storage - 1);
                 $sum_50 = 0.0;
-                for ($low .. $high) {
-                    $sum_50 += $storage[$_]->{$cur}{'lt'} if $storage[$_]->{$cur}{'lt'};
+                for my $c($low .. $high) {
+                    $sum_50 += $storage[$c]->{$cur}{'lt'} if $storage[$c]->{$cur}{'lt'};
                 }
                 $avg_50 = $sum_50 / 50;
                 $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_50 * 100) - 100);
@@ -175,8 +174,8 @@ while (1) {
                 if (scalar @storage >= 250) {
                     ($low, $high) = (scalar @storage - 250, scalar @storage - 1);
                     $sum_250 = 0.0;
-                    for ($low .. $high) {
-                        $sum_250 += $storage[$_]->{$cur}{'lt'} if $storage[$_]->{$cur}{'lt'};
+                    for my $c ($low .. $high) {
+                        $sum_250 += $storage[$c]->{$cur}{'lt'} if $storage[$c]->{$cur}{'lt'};
                     }
                     $avg_250 = $sum_250 / 250;
                     $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_250 * 100) - 100);
@@ -184,8 +183,8 @@ while (1) {
                     if (scalar @storage >= 500) {
                         ($low, $high) = (scalar @storage - 500, scalar @storage - 1);
                         $sum_500 = 0.0;
-                        for ($low .. $high) {
-                            $sum_500 += $storage[$_]->{$cur}{'lt'} if $storage[$_]->{$cur}{'lt'};
+                        for my $c ($low .. $high) {
+                            $sum_500 += $storage[$c]->{$cur}{'lt'} if $storage[$c]->{$cur}{'lt'};
                         }
                         $avg_500 = $sum_500 / 500;
                         $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_500 * 100) - 100);
