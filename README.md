@@ -47,3 +47,13 @@ Lately I recognized that vcx used much more memory than needed. This should be f
 
 Normally vcx should stay under 200MB or RAM usage. This amount of memory is needed because vcx stores
 the last 1000 info-hashes about every currency on vircurex.
+
+
+Donations
+---------
+
+If you like this program and want to give me some credit for it, 
+please donate to either one of those: 
+
+    LTC: LbD7yPykMXhP83tH7PNoDL63YEujXDxxBC   
+    DOGE: DGunJfJBksKPHNawE8ZRPzPTvSHdqtoGGn
