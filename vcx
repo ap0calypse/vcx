@@ -228,6 +228,6 @@ while (1) {
         }
     }
 
-    print colored ("\n\nIf you like this program and want to give me some credit for it, please donate to my LTC adress: LbD7yPykMXhP83tH7PNoDL63YEujXDxxBC\n", 'italic white on_black');
+    print colored ("\n\nIf you like this program and want to give me some credit for it, \nplease donate to either of those: LTC: LbD7yPykMXhP83tH7PNoDL63YEujXDxxBC\tDOGE: DGunJfJBksKPHNawE8ZRPzPTvSHdqtoGGn\n", 'italic white on_black');
     sleep $sleep_int;
 }
