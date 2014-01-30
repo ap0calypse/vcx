@@ -35,7 +35,8 @@ my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM 
 
 my ($balance, $data, $response);
 my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
-     $avg_50, $avg_500, $avg_250, $sum_500, $sum_250, $sum_50, $v, $bal, $bal_avail );
+     $avg_50, $avg_500, $avg_250, $sum_500, $sum_250, $sum_50, $v, $bal, $bal_avail,
+     $avg_1000, $sum_1000);
 
 
 my $comp_data;
@@ -138,7 +139,7 @@ while (1) {
         $storcounter++;
         $runcounter++;
     }
-    if (scalar @storage > 500) { # 200 x 5 secs for averages and tendencies
+    if (scalar @storage > 1000) { # 1000 times x secs for averages and tendencies
         undef $storage[0];
         shift @storage;
         $storcounter--;
@@ -148,7 +149,7 @@ while (1) {
     print "\nHB - highest bid / LA - lowest ask / LT - last executed trade / VOL_BTC - Trading Volume in BTC\n";
     print "TENDENCY is a percentual value and will appear after some time, please be patient :)\n";
     print "Tendency calculates like this: (last_trade / average_of_x_recorded_trades * 100) - 100\n\n";
-    printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_50 TEND_250 TEND_500));
+    printf("%8s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s  :  %10s\n\n\n", qw(CUR HB LA LT VOL_BTC TEND_50 TEND_250 TEND_500 TEND_1000));
     $colcount = 0;
     if ($storcounter >= 0 ) {
         for my $cur (sort keys %{$storage[$storcounter]}) {
@@ -188,7 +189,17 @@ while (1) {
                         }
                         $avg_500 = $sum_500 / 500;
                         $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_500 * 100) - 100);
-                        formprint(0, $v);
+                        formprint(1, $v);
+                        if (scalar @storage >= 1000) {
+                            ($low, $high) = (scalar @storage - 1000, scalar @storage - 1);
+                            $sum_1000 = 0.0;
+                            for my $c ($low .. $high) {
+                                $sum_1000 += $storage[$c]->{$cur}{'lt'} if $storage[$c]->{$cur}{'lt'};
+                            }
+                            $avg_1000 = $sum_1000 / 1000;
+                            $v = sprintf("%+010.5f", ($storage[$high]->{$cur}{'lt'} / $avg_1000 * 100) - 100);
+                            formprint(0, $v);
+                        }
                     }
 
                 }
