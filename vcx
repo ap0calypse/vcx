@@ -5,12 +5,12 @@ use XML::Simple;
 use LWP::UserAgent;
 use Term::ANSIColor qw(colored);
 use Digest::SHA qw(sha256_hex);
-use Data::Dumper;
 use POSIX qw(strftime);
 
-# near future feature, coming soon
+# hash for config options
 my $conf_hash;
 
+# read it in
 my $CONFIG = $ENV{'HOME'} . "/.vcxconf.xml";
 if (-e $CONFIG) {
     $conf_hash = XMLin($CONFIG);
