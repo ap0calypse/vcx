@@ -31,7 +31,7 @@ $ua->agent("Mozilla/8.0");
 $ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});   
 
 # which coins do we want to watch?
-my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM QRK PPC);
+my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM QRK PPC VTC);
 
 my ($balance, $data, $response);
 my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
