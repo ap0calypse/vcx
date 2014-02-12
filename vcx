@@ -213,11 +213,20 @@ while (1) {
         print "\n";
     }
     print "\n\n\tBALANCES\n\n";
-    printf "%5s: %20s %20s\n\n", "CUR", "TOTAL BALANCE", "AVAIL BALANCE";
+    printf "%5s: %20s %20s %20s\n\n", "CUR", "TOTAL BALANCE", "AVAIL BALANCE", "VALUE BTC";
     $colcount = 0;
     if ($bal_avail) {
         for (sort keys %{$bal->{'balances'}}) {
-            $ln = sprintf "%5s: %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'};
+            if ($_ ne 'BTC') {
+                $ln = sprintf "%5s: %20.8f %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
+                exists $storage[scalar @storage - 1]->{$_}{'lt'} ? 
+                $bal->{'balances'}{$_}{'availablebalance'}{'content'} * $storage[scalar @storage - 1]->{$_}{'lt'} : 0.0;
+            }
+            else {
+                $ln = sprintf "%5s: %20.8f %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
+                $bal->{'balances'}{$_}{'availablebalance'}{'content'};
+            }
+
             $colcount++;
             if ($colcount % 2) {
                 print colored($ln, 'bright_white on_black');
@@ -226,6 +235,7 @@ while (1) {
                 print colored($ln, 'bright_white on_grey3');
             }
         }
+
     }
     sleep $sleep_int;
 }
