@@ -31,7 +31,11 @@ $ua->agent("Mozilla/8.0");
 $ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});   
 
 # which coins do we want to watch?
-my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM QRK PPC VTC EUR USD);
+my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DGC WDC XPM QRK PPC VTC EUR USD);
+
+
+# don't change this! REALLY! DON'T!
+my @currlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM QRK PPC VTC EUR USD);
 
 my ($balance, $data, $response);
 my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
@@ -81,7 +85,7 @@ sub get_data {
     }
     
     if ($data != 0) {
-        for my $cur (@watchlist) {
+        for my $cur (@currlist) {
             $comp_data->{$cur}{'la'} = $data->{$cur}{'BTC'}{'lowest-ask'}{'content'};
             $comp_data->{$cur}{'hb'} = $data->{$cur}{'BTC'}{'highest-bid'}{'content'};
             $comp_data->{$cur}{'lt'} = $data->{$cur}{'BTC'}{'last-trade'}{'content'};
@@ -153,7 +157,8 @@ while (1) {
     $colcount = 0;
     if ($storcounter >= 0 ) {
         for my $cur (sort keys %{$storage[$storcounter]}) {
-            $colcount++;
+            next unless (grep {/$cur/} @watchlist);
+            $colcount++; 
             $ln = sprintf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
             $cur, $storage[scalar @storage - 1]->{$cur}{'hb'}, $storage[scalar @storage - 1]->{$cur}{'la'},
             $storage[scalar @storage - 1]->{$cur}{'lt'}, $storage[scalar @storage - 1]->{$cur}{'vo'};
