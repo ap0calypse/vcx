@@ -216,15 +216,19 @@ while (1) {
     printf "%5s: %20s %20s %20s\n\n", "CUR", "TOTAL BALANCE", "AVAIL BALANCE", "VALUE BTC";
     $colcount = 0;
     if ($bal_avail) {
+        my $sum_bal = 0;
         for (sort keys %{$bal->{'balances'}}) {
             if ($_ ne 'BTC') {
                 $ln = sprintf "%5s: %20.8f %20.8f %20.8f\t( LT: %10.8f )\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
                 exists $storage[scalar @storage - 1]->{$_}{'lt'} ? 
                 $bal->{'balances'}{$_}{'availablebalance'}{'content'} * $storage[scalar @storage - 1]->{$_}{'lt'} : 0.0,  $storage[scalar @storage - 1]->{$_}{'lt'};
+                $sum_bal += (exists $storage[scalar @storage - 1]->{$_}{'lt'} ? 
+                             $bal->{'balances'}{$_}{'availablebalance'}{'content'} * $storage[scalar @storage - 1]->{$_}{'lt'} : 0.0)
             }
             else {
                 $ln = sprintf "%5s: %20.8f %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
                 $bal->{'balances'}{$_}{'availablebalance'}{'content'};
+                $sum_bal += $bal->{'balances'}{$_}{'availablebalance'}{'content'};
             }
 
             $colcount++;
@@ -235,6 +239,7 @@ while (1) {
                 print colored($ln, 'bright_white on_grey3');
             }
         }
+        printf "\n\n%-30s %17s %20.8f\n", "Sum of all currencies in BTC:", "", $sum_bal;
 
     }
     sleep $sleep_int;
