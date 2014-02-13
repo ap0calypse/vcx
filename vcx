@@ -31,7 +31,7 @@ $ua->agent("Mozilla/8.0");
 $ua->cookie_jar({file => "$ENV{'HOME'}/.cookiejar_vcx.txt"});   
 
 # which coins do we want to watch?
-my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM QRK PPC VTC);
+my @watchlist = qw(DOGE FTC FRC I0C IXC NMC NVC NXT LTC DVC DGC ANC WDC TRC XPM QRK PPC VTC EUR USD);
 
 my ($balance, $data, $response);
 my ( $nowtime, $storcounter, $nowdate, $block, $runcounter, @storage, $cur, $low, $high, 
@@ -218,9 +218,9 @@ while (1) {
     if ($bal_avail) {
         for (sort keys %{$bal->{'balances'}}) {
             if ($_ ne 'BTC') {
-                $ln = sprintf "%5s: %20.8f %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
+                $ln = sprintf "%5s: %20.8f %20.8f %20.8f\t( LT: %10.8f )\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
                 exists $storage[scalar @storage - 1]->{$_}{'lt'} ? 
-                $bal->{'balances'}{$_}{'availablebalance'}{'content'} * $storage[scalar @storage - 1]->{$_}{'lt'} : 0.0;
+                $bal->{'balances'}{$_}{'availablebalance'}{'content'} * $storage[scalar @storage - 1]->{$_}{'lt'} : 0.0,  $storage[scalar @storage - 1]->{$_}{'lt'};
             }
             else {
                 $ln = sprintf "%5s: %20.8f %20.8f %20.8f\n", $_ ,$bal->{'balances'}{$_}{'balance'}{'content'}, $bal->{'balances'}{$_}{'availablebalance'}{'content'},
