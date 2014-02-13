@@ -81,10 +81,10 @@ sub get_data {
     $response = $ua->get("https://api.vircurex.com/api/get_info_for_currency.xml");
     if ($response->is_success) {
         $data = eval { XMLin($response->decoded_content) };
-        $data = 0 if $@;
+        $data = {} if $@;
     }
     
-    if ($data != 0) {
+    if ($data != {}) {
         for my $cur (@currlist) {
             $comp_data->{$cur}{'la'} = $data->{$cur}{'BTC'}{'lowest-ask'}{'content'};
             $comp_data->{$cur}{'hb'} = $data->{$cur}{'BTC'}{'highest-bid'}{'content'};
