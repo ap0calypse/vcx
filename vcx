@@ -245,8 +245,8 @@ while (1) {
             }
         }
         printf "\n\n%-30s %17s %20.8f  ( USD: %10.5f  /  EUR: %10.5f )\n", "Sum of all currencies in BTC:", "", $sum_bal, 
-                $sum_bal / (exists $storage[scalar @storage - 1]->{'USD'}{'lt'} ? $storage[scalar @storage - 1]->{'USD'}{'lt'} : 1),
-                $sum_bal / (exists $storage[scalar @storage - 1]->{'EUR'}{'lt'} ? $storage[scalar @storage - 1]->{'EUR'}{'lt'} : 1);
+                $sum_bal / (exists $storage[scalar @storage - 1]->{'USD'}{'lt'} and $storage[scalar @storage - 1]->{'USD'}{'lt'} != 0 ? $storage[scalar @storage - 1]->{'USD'}{'lt'} : 1),
+                $sum_bal / (exists $storage[scalar @storage - 1]->{'EUR'}{'lt'} and $storage[scalar @storage - 1]->{'USD'}{'lt'} != 0 ? $storage[scalar @storage - 1]->{'EUR'}{'lt'} : 1);
     }
     sleep $sleep_int;
 }
