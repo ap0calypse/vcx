@@ -143,6 +143,10 @@ while (1) {
         $storcounter++;
         $runcounter++;
     }
+    else {
+        sleep $sleep_int;
+        next;
+    }
     if (scalar @storage > 1000) { # 1000 times x secs for averages and tendencies
         undef $storage[0];
         shift @storage;
@@ -160,8 +164,8 @@ while (1) {
             next unless (grep {/$cur/} @watchlist);
             $colcount++; 
             $ln = sprintf "%8s  :  %.8f  :  %.8f  :  %.8f  :  %010.5f  :  ", 
-            $cur, $storage[scalar @storage - 1]->{$cur}{'hb'}, $storage[scalar @storage - 1]->{$cur}{'la'},
-            $storage[scalar @storage - 1]->{$cur}{'lt'}, $storage[scalar @storage - 1]->{$cur}{'vo'};
+            $cur, $storage[scalar @storage - 1]->{$cur}{'hb'} ?  $storage[scalar @storage - 1]->{$cur}{'hb'} : 0.0, $storage[scalar @storage - 1]->{$cur}{'la'} ? $storage[scalar @storage - 1]->{$cur}{'la'} : 0.0,
+            $storage[scalar @storage - 1]->{$cur}{'lt'} ? $storage[scalar @storage - 1]->{$cur}{'lt'} : 0.0 , $storage[scalar @storage - 1]->{$cur}{'vo'} ? $storage[scalar @storage - 1]->{$cur}{'vo'} : 0.0; 
             if ($colcount % 2) {
                 print colored($ln, 'bright_white on_black');
             }
